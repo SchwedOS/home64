@@ -2,6 +2,7 @@
 
 /******************************************************************/
 /* server app for home64 smart home inclusion (C) J.Schweded 2020 */
+/* picoc is required for running this c-script                    */
 /******************************************************************/
 
 int listenfd = 0, connfd = 0, n=0 ;
