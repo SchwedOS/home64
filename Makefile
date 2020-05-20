@@ -94,13 +94,17 @@ all: 	$@ $(OBJECTLIST)
 .PHONY:	clean
 clean:
 ifeq ($(OS_TYPE),MINGW32_NT)
-	del .\exe\*.* /s /q
-	del .\obj\*.* /s /q
-	del .\list\*.* /s /q
+	del .\exe\*.prg /s /q
+	del .\obj\*.o /s /q
+	del .\list\*.map /s /q
+	del .\list\*.lbl /s /q
+	del .\list\*.s /s /q
 else
-	rm -f ./obj/*.*
-	rm -f ./list/*.*
-	rm -f ./exe/*.*
+	rm -f ./obj/*.o
+	rm -f ./exe/*.prg
+	rm -f ./list/*.map
+	rm -f ./list/*.lbl
+	rm -f ./list/*.s
 endif
 
 
