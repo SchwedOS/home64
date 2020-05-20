@@ -1,0 +1,186 @@
+int listenfd = 0, connfd = 0, n=0 ;
+struct sockaddr_in serv_addr ; 
+
+typedef struct {
+   char name[34];
+   unsigned char mask;
+   unsigned char state;
+} home_struct;
+
+home_struct home[10];
+char* bufptr;
+int i;
+
+char sendBuff[1025] ;
+char recvBuff[1025] ;
+time_t ticks ;
+ssize_t reclen;
+char toggle = 0;
+char hitflag = 0;
+
+memset(home,0,sizeof(home));
+
+
+printf( "Socket creation (socket)\n" ) ;
+listenfd = socket( AF_INET, SOCK_STREAM, 0 ) ;
+memset( &serv_addr, 0, sizeof( serv_addr ) ) ;
+memset( sendBuff, 0, sizeof( sendBuff ) ) ; 
+memset( recvBuff, 0, sizeof( recvBuff ) ) ; 
+
+serv_addr.sin_family = AF_INET ;
+serv_addr.sin_addr.s_addr = htonl( INADDR_ANY ) ;
+serv_addr.sin_port = htons( 64 ) ; 
+
+printf( "Check port (Bind)\n" ) ;
+bind( listenfd, (struct sockaddr*) &serv_addr, sizeof( serv_addr ) ) ; 
+
+printf( "Start server (listen)\n" ) ;
+listen( listenfd, 10 ) ; 
+
+while(1) {
+    printf ("Accept connection (accept)\n" ) ;
+    connfd = accept( listenfd, (struct sockaddr*)NULL, NULL ) ; 
+    printf( "Connection accepted\n" ) ;
+
+    reclen = recv( connfd, recvBuff, sizeof(recvBuff)-1, 0 );
+	recvBuff[reclen] = 0;
+    printf( "Message received: %s\n", recvBuff ) ;
+    
+    /* look for home server request or client request */
+    /* parse GET keyword for server request ( GET /ULTIMATE64/OUT6/ON )*/
+    if(strncmp(recvBuff, "GET /", 5) == 0)
+    {
+       //printf("Debug 49 \r\n");
+       /* server */
+       /* find client name */
+       bufptr = strchr(&recvBuff[5], '/');
+       if(bufptr != NULL)
+       {
+          //printf("Debug 55 \r\n");
+          /* Terminate Name End */
+          *bufptr = 0;
+          /* GET /ULTIMATE640OUT6/ON */
+          /*                |        */;
+          
+          /* search or copy name to home structure */
+          for ( i = 0; i < 10; i++)
+          {
+             if(home[i].name[0] == 0)
+             {
+                 strncpy(&home[i].name[0],&recvBuff[5], 32);
+                 /* new client name, add to home */
+                 hitflag = 1;
+                 //printf("Debug 69 %s \r\n", &home[i].name[0]);
+                 break;
+             }
+             else
+             {
+                 if(strncmp(&recvBuff[5], &home[i].name[0], 32) == 0)
+                 {
+                    /* found name already in home */
+                    //printf("Debug 77 %s \r\n", &home[i].name[0]);
+                    hitflag = 1;
+                    //printf("Debug 78 \r\n");
+                    break;
+                 }
+             }
+           }
+             
+           if(hitflag == 1)
+           {
+              hitflag = 0;              
+              bufptr++;
+              /* GET /ULTIMATE640OUT6/ON */
+              /*                 |       */
+                
+              /* find output to be switched */
+              if(strncmp(bufptr, "OUT", 3) == 0)
+              {
+                  unsigned int mask;
+                  unsigned int state;
+                  unsigned int out = 0;
+                  
+                  mask = 0;                 
+                  
+                  //printf("Debug 100 \r\n");
+                  /* find output number (0..7) */
+                  bufptr+=4; *bufptr = 0; bufptr--; 
+                    
+                  /* GET /ULTIMATE640OUT60ON */
+                  /*                    |    */
+                  out = atoi(bufptr);
+                  if((out >= 0) && (out <= 7))
+                  {  
+                     //printf("Debug 109 \r\n");
+                     /* find switch state */
+                     bufptr+=2;
+                     /* GET /ULTIMATE640OUT60ON */
+                     /*                      |  */
+                     if(strncmp(bufptr, "OFF", 3) == 0)
+                     {
+                        mask |= (1<<out);
+                        //printf("Debug 117 \r\n");
+                        state = (1<<out);
+                        home[i].state |= state;
+                        
+                     }
+                     else
+                     {
+                       if( strncmp(bufptr, "ON", 2) == 0)
+                       {
+                          state = 0xFF;
+                          mask |= (1<<out);
+                          state &= ~(1<<out);
+                          home[i].state &= state;
+                       }
+                     
+                     }
+                     home[i].mask |= mask;
+                     printf( "Home request: %s, %3d %3d\r\n",&home[i].name[0], home[i].mask, home[i].state ) ;                     
+                  } 
+              }
+          }
+                    
+       }
+        /* send dummy answer message to html request */
+           ticks = time( NULL ) ;
+           snprintf( sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime( &ticks ) ) ;
+           send( connfd, sendBuff, strlen(sendBuff), 0 );
+           printf( "Dummy answer sent: %s\n\r", sendBuff ) ;
+    }   
+    else
+    {   /* look for Home clients */
+    
+       for ( i = 0; i < 10; i++)
+       {
+           if(strncmp(&recvBuff, &home[i].name[0], 32) == 0)
+           {
+              hitflag = 1;
+              break;
+           }  
+           
+       }
+       if(hitflag == 1)
+       {
+          hitflag = 0;
+          snprintf( sendBuff, sizeof(sendBuff), "%d,%d\n", home[i].mask, home[i].state);
+          send( connfd, sendBuff, strlen(sendBuff), 0 );
+          printf( "Home answer sent: %s\n\r", sendBuff ) ;
+          /* reset mask and state */
+           home[i].mask = 0;
+           home[i].state = 0;
+       }
+       else
+       {
+          /* home client is currently unknown, send no change */
+          printf( "Home answer sent: 0,0\r\n");
+          send( connfd, "0,0\n",8,0);
+       }
+    
+    
+    }
+    
+
+    shutdown( connfd, 2 ) ;
+    close( connfd ) ;
+}
