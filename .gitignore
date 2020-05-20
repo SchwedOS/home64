@@ -2,7 +2,6 @@
 *.d
 
 # Object files
-*.o
 *.ko
 *.obj
 *.elf
@@ -10,7 +9,7 @@
 # Linker output
 *.ilk
 *.map
-*.exp
+*.lbl
 
 # Precompiled Headers
 *.gch
@@ -29,12 +28,11 @@
 *.dylib
 
 # Executables
-*.exe
 *.out
 *.app
 *.i*86
 *.x86_64
-*.hex
+*.prg
 
 # Debug files
 *.dSYM/
