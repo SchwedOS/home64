@@ -1,4 +1,4 @@
-cd d:\projekte\Home64
+rem cd d:\projekte\Home64
 
 mingw32-make clean
 
