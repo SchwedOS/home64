@@ -47,7 +47,7 @@ endif
 
 .c.o:
 	@echo $<
-	@$(CC) -o ./list/$(basename $<).s -Oirs -T --include-dir ./lib --codesize 100 --check-stack -g -t $(SYS) -I./ $<    
+	@$(CC) -o ./list/$(basename $<).s -Oirs -T --include-dir ./inc --codesize 100 --check-stack -g -t $(SYS) -I./ $<    
 	@$(AS) -o ./obj/$(basename $<).o ./list/$(basename $<).s
 
 .asm.o:
