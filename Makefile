@@ -61,7 +61,7 @@ endif
 OBJECTLIST = main.o
 
 LINKLIST =	./obj/main.o \
-			./lib/ultimate_lib_fix.o \
+			./lib/ultimate_lib.o \
 			./lib/dottedquad.o \
 			./lib/dottedquad_c.o \
 			$(CLIB)

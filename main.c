@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <conio.h>
 #include <ctype.h>
-//#include <time.h>
 
 #include "ultimate_lib.h"
 #include "timer.h"
@@ -16,11 +15,8 @@
 
 // private data/const **************************************************
 
-#define DiableAllInterrupts()   __asm__ ("cli")
-#define EnableAllInterrupts()   __asm__ ("sei")
 
-
-// #define _DEBUG64
+//#define _DEBUG64
 //#define _NO_TCP
 
 /* Home IP and Port */
@@ -46,7 +42,6 @@
 
 /* rbuf and sbuf for Tcp/Ip. use rbuf also for reading IP file at start and getting IP over keyboard */
 static unsigned char rbuf[128];
-//static unsigned char sbuf[128];
 static unsigned char *bufptr1;
 static unsigned char *bufptr2;
 #define ipfile  rbuf
@@ -75,7 +70,7 @@ static void uii_connect(void);
 static void wait(uint8_t time);
 static void change_ip(void);
 static void change_name(void);
-static void SetupScreen(uint8_t Screen);
+static void setup_screen(uint8_t screen);
 static void setup_network(void);
 #define START_SCREEN   0
 #define MENU_SCREEN    1
@@ -87,14 +82,11 @@ static int uii_tcp_receive(unsigned char socketid, char *result);
 void main(void)
 {
    //_heapadd ((void *) 0x7000, 0x1000); /* adding 0x1000 heap */
-   //static uint8_t i;
 
-   SetupScreen(START_SCREEN);
+   setup_screen(START_SCREEN);
 
    load_config();
-   
-   // uii_tcpclose(0);
-
+  
    setup_network();
 
    start_timer_freerunning_sysclock_32bit(TIM2);
@@ -156,7 +148,6 @@ void main(void)
            port |= port_state;
          }
          else {
-             //wait(10);
              error_flag = 0;
          }
 
@@ -216,14 +207,14 @@ void main(void)
 
 
 
-static void SetupScreen(uint8_t Screen)
+static void setup_screen(uint8_t screen)
 {
    clrscr(); /* clear whole screen */
    (void)textcolor(COLOR_GRAY1);
    (void)bgcolor(COLOR_BLACK);
    (void)bordercolor(COLOR_BLACK);
    (void)revers (1);
-   if(Screen == START_SCREEN) {
+   if(screen == START_SCREEN) {
        cprintf("Home64 V1.0          (c) 2020 J.Schwedes");
        (void)revers (0);
        chline(40); /* line horizontal */
@@ -239,7 +230,7 @@ static void SetupScreen(uint8_t Screen)
        (void)revers (0);
 
    }
-   else if(Screen == MENU_SCREEN) {
+   else if(screen == MENU_SCREEN) {
        cprintf("q=Quit    i=ServerIp    n=My Name       ");
        (void)revers (0);
        chline(40); /* line horizontal */
@@ -417,8 +408,8 @@ static void wait(uint8_t time)
            if(TempChar == 'c')
            {
               /* start configuration menu */
-              SetupScreen(MENU_SCREEN);
-              SetupScreen(START_SCREEN);
+              setup_screen(MENU_SCREEN);
+              setup_screen(START_SCREEN);
               if(socketID) uii_tcpclose(socketID);
               setup_network();
            } else if(TempChar == 'q')
@@ -528,9 +519,9 @@ static void setup_network(void)
 {
    uii_flush();
 
-   //cprintf("UII Network...\n\n\r");
-    gotoxy(0,3);
-    /* Connect and get socket ID */
+   gotoxy(0,3);
+   
+   /* Connect and get socket ID */
 
    uii_settarget(TARGET_NETWORK);
    uii_identify();
