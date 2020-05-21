@@ -11,5 +11,7 @@ This gateway server software is necessary because currently Ultimate64/II+ does 
 - server.pcc:	gateway software example implemented as a pico-c script
 - picoc:		c-interpreter executables for Linux Arm64/X64 and Windows
 
-For further information please read the "home64.docx" included in this package.
-For compilation information please go into Makefile.
+# Important
+- For further information please read the "home64.docx" included in this package.
+- For compilation information please go into Makefile.
+- The compilation build generates only a home64.prg file. This file need to be copied to a d64 or d81 disk image because home64.prg uses disk access.
